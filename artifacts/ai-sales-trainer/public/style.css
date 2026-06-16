@@ -486,7 +486,8 @@ body {
   border: 1.5px solid var(--border);
   background: var(--bg);
   transition: border-color var(--transition), background var(--transition), color var(--transition);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .fopt:hover {
