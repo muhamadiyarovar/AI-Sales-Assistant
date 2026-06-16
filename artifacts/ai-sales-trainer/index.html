@@ -278,7 +278,261 @@
     </section>
 
     <!-- ================================================================
-         TOAST — «Скоро будет доступно»
+         SCREEN 5 — Потренироваться: выбор программ и партнёра
+    ================================================================ -->
+    <section id="screen-practice-setup" class="screen">
+      <div class="screen-inner practice-setup-inner">
+        <div class="screen-header">
+          <h2 class="screen-title">Тренировка переговоров</h2>
+          <p class="screen-subtitle">Выберите программы и тип партнёра</p>
+        </div>
+
+        <!-- Programs -->
+        <div class="practice-section">
+          <div class="practice-section-title">Программы для отработки</div>
+          <div class="program-list" id="program-list">
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Биоинформатика и ИИ в медицине">
+              <div class="program-item-body">
+                <div class="program-item-name">Биоинформатика и ИИ в медицине</div>
+                <div class="program-item-meta">300 ч · Гибридная · ДПП</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="ИИ в медицине">
+              <div class="program-item-body">
+                <div class="program-item-name">ИИ в медицине</div>
+                <div class="program-item-meta">70 ч · Гибридная · УПК</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Управление на основе данных в здравоохранении">
+              <div class="program-item-body">
+                <div class="program-item-name">Управление на основе данных в здравоохранении</div>
+                <div class="program-item-meta">32 ч · Очно в кампусе · УПК</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Специалист по разработке и внедрению ML-моделей">
+              <div class="program-item-body">
+                <div class="program-item-name">Специалист по разработке и внедрению ML-моделей</div>
+                <div class="program-item-meta">216 ч · Гибридная · УПК</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Менеджер проектов цифровой трансформации">
+              <div class="program-item-body">
+                <div class="program-item-name">Менеджер проектов цифровой трансформации</div>
+                <div class="program-item-meta">216 ч · Гибридная · УПК</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Кибербезопасность ИИ-систем">
+              <div class="program-item-body">
+                <div class="program-item-name">Кибербезопасность ИИ-систем</div>
+                <div class="program-item-meta">200 ч · Очный с цифровым компонентом · КВВУ</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Компьютерное зрение">
+              <div class="program-item-body">
+                <div class="program-item-name">Компьютерное зрение</div>
+                <div class="program-item-meta">200 ч · Очный с цифровым компонентом · ВВА</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Программная инженерия и ИИ для робототехники 2027">
+              <div class="program-item-body">
+                <div class="program-item-name">Программная инженерия и ИИ для робототехники 2027</div>
+                <div class="program-item-meta">288 ч · Очный с цифровым компонентом · ВАС · Запуск 2027</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Анализ данных и введение в машинное обучение">
+              <div class="program-item-body">
+                <div class="program-item-name">Анализ данных и введение в машинное обучение</div>
+                <div class="program-item-meta">72 ч · Очный · Общее ядро для военных вузов</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Инженерия данных и прототипирование ИИ-решений">
+              <div class="program-item-body">
+                <div class="program-item-name">Инженерия данных и прототипирование ИИ-решений</div>
+                <div class="program-item-meta">72 ч · Очный · Общее ядро для военных вузов</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Большие языковые модели">
+              <div class="program-item-body">
+                <div class="program-item-name">Большие языковые модели</div>
+                <div class="program-item-meta">32 ч · Очный · ВА РВСН · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Прикладные ИИ-решения">
+              <div class="program-item-body">
+                <div class="program-item-name">Прикладные ИИ-решения</div>
+                <div class="program-item-meta">72 ч · Очный · ВА РВСН · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Основы кибербезопасности: модели угроз и методы защиты">
+              <div class="program-item-body">
+                <div class="program-item-name">Основы кибербезопасности: модели угроз и методы защиты</div>
+                <div class="program-item-meta">72 ч · Очный · КВВУ · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Прикладная безопасность интеллектуальных систем">
+              <div class="program-item-body">
+                <div class="program-item-name">Прикладная безопасность интеллектуальных систем</div>
+                <div class="program-item-meta">72 ч · Очный · КВВУ · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Компьютерное зрение и обработка мультимодальных данных">
+              <div class="program-item-body">
+                <div class="program-item-name">Компьютерное зрение и обработка мультимодальных данных</div>
+                <div class="program-item-meta">72 ч · Очный · ВВА · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Распознавание и классификация объектов">
+              <div class="program-item-body">
+                <div class="program-item-name">Распознавание и классификация объектов</div>
+                <div class="program-item-meta">36 ч · Очный · ВВА · Профильный модуль</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="ИИ-трансформация профессии: новые горизонты с цифровым ассистентом">
+              <div class="program-item-body">
+                <div class="program-item-name">ИИ-трансформация профессии: новые горизонты с цифровым ассистентом</div>
+                <div class="program-item-meta">32 ч · Очно в кампусе · 75 000 ₽</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Основы ИИ в рабочих процессах: модели и агенты">
+              <div class="program-item-body">
+                <div class="program-item-name">Основы ИИ в рабочих процессах: модели и агенты</div>
+                <div class="program-item-meta">32 ч · Очно в кампусе · 100 000 ₽</div>
+              </div>
+            </label>
+
+            <label class="program-item" onclick="toggleProgramItem(this)">
+              <input type="checkbox" name="practice-prog" value="Внедрение ИИ: стратегия трансформации бизнеса">
+              <div class="program-item-body">
+                <div class="program-item-name">Внедрение ИИ: стратегия трансформации бизнеса</div>
+                <div class="program-item-meta">37 ч · Очно в кампусе · 100 000 ₽</div>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- Partner type -->
+        <div class="practice-section">
+          <div class="practice-section-title">Тип партнёра</div>
+          <div class="partner-list">
+
+            <label class="partner-item" onclick="togglePartnerItem(this)">
+              <input type="radio" name="practice-partner" value="Бизнес">
+              <div class="partner-item-body">
+                <div class="partner-item-name">Бизнес</div>
+                <div class="partner-item-desc">Менеджер по персоналу или директор по обучению коммерческой компании</div>
+              </div>
+            </label>
+
+            <label class="partner-item" onclick="togglePartnerItem(this)">
+              <input type="radio" name="practice-partner" value="Госсектор">
+              <div class="partner-item-body">
+                <div class="partner-item-name">Госсектор</div>
+                <div class="partner-item-desc">Руководитель департамента или заместитель министра</div>
+              </div>
+            </label>
+
+            <label class="partner-item" onclick="togglePartnerItem(this)">
+              <input type="radio" name="practice-partner" value="Образовательная организация">
+              <div class="partner-item-body">
+                <div class="partner-item-name">Образовательная организация</div>
+                <div class="partner-item-desc">Проректор, декан или заведующий кафедрой вуза / ссуза</div>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goToScreen('mode-choice')">Назад</button>
+          <button class="btn btn-primary" id="start-negotiate-btn" onclick="startNegotiation()" disabled>Начать тренировку</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SCREEN 6 — Переговоры (чат)
+    ================================================================ -->
+    <section id="screen-negotiate" class="screen screen--chat">
+      <div class="chat-layout">
+
+        <!-- Header -->
+        <header class="chat-header">
+          <button class="chat-back-btn" onclick="exitNegotiate()" aria-label="Завершить тренировку">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12 15l-5-5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="chat-header-info">
+            <span class="chat-header-title">Тренировка переговоров</span>
+            <span class="chat-header-sub" id="neg-header-sub">Загрузка…</span>
+          </div>
+          <span id="neg-partner-badge" class="neg-partner-badge" aria-label="Тип партнёра"></span>
+        </header>
+
+        <!-- Messages -->
+        <div class="negotiate-messages" id="negotiate-messages" role="log" aria-live="polite"></div>
+
+        <!-- Input bar -->
+        <div class="negotiate-input-bar">
+          <textarea
+            id="negotiate-input"
+            class="negotiate-textarea"
+            placeholder="Ваш ответ…"
+            rows="1"
+            onkeydown="negKeydown(event)"
+            oninput="autoResizeNegInput(this)"
+            aria-label="Ваш ответ"
+          ></textarea>
+          <button class="negotiate-send-btn" id="neg-send-btn" onclick="sendNegotiationMessage()" aria-label="Отправить" disabled>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M2 9l14-7-7 14V9H2z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         TOAST — уведомления
     ================================================================ -->
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
