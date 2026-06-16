@@ -369,8 +369,14 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100dvh;
-  max-width: 720px;
-  margin: 0 auto;
+}
+
+/* Two-column body: filter left + results right */
+.chat-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
 }
 
 /* ---------- Header ---------- */
@@ -429,11 +435,11 @@ body {
 /* ---------- Filter panel ---------- */
 .filter-panel {
   flex-shrink: 0;
+  width: 300px;
   overflow-y: auto;
-  max-height: 52vh;
   background: var(--surface);
-  border-bottom: 2px solid var(--border);
-  padding: 16px;
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -548,11 +554,12 @@ body {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 16px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 0;
   scroll-behavior: smooth;
+  background: var(--bg);
 }
 
 /* Results placeholder */
@@ -649,5 +656,17 @@ body {
 
   .mode-card {
     padding: 16px 14px;
+  }
+
+  /* Screen 4: stack on mobile */
+  .chat-body {
+    flex-direction: column;
+  }
+
+  .filter-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 50vh;
   }
 }
