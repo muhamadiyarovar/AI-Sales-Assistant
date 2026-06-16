@@ -246,7 +246,7 @@ ${KNOWLEDGE_BASE}`;
 
 // ── POST /api/match ──────────────────────────────────────────────
 // Body: { messages: [{role: "user"|"assistant", content: string}] }
-// Response: SSE stream — data: {"content":"..."} / data: {"done":true} / data: {"error":"..."}
+// Response: JSON { result: string } | { error: string }
 
 router.post("/match", async (req, res) => {
   const { messages } = req.body as {
@@ -258,15 +258,8 @@ router.post("/match", async (req, res) => {
     return;
   }
 
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering in production
-  res.flushHeaders(); // send headers immediately so the stream starts
-
   try {
-    const stream = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: "openai/gpt-4o-mini",
       max_completion_tokens: 2048,
       messages: [
@@ -276,32 +269,16 @@ router.post("/match", async (req, res) => {
           content: m.content,
         })),
       ],
-      stream: true,
+      stream: false,
     });
 
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
-      }
-    }
-
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    const result = completion.choices[0]?.message?.content ?? "";
+    res.json({ result });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Произошла ошибка при запросе к ИИ";
-    res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
-    res.end();
+    res.status(500).json({ error: message });
   }
-});
-
-// ── OPTIONS /api/match (CORS preflight) ──────────────────────────
-router.options("/match", (_req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.sendStatus(204);
 });
 
 export default router;

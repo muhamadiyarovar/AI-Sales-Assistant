@@ -121,57 +121,20 @@ function applyFilters() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages: [{ role: 'user', content: message }] }),
   })
-    .then(function (res) {
-      if (!res.ok) throw new Error('Сервер вернул ошибку ' + res.status);
-
-      // Remove typing indicator, create result block
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (payload) {
       if (typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
       resultEl = document.createElement('div');
       resultEl.className = 'result-block';
       resultsEl.appendChild(resultEl);
 
-      var reader = res.body.getReader();
-      var decoder = new TextDecoder();
-      var buffer = '';
-
-      function pump() {
-        return reader.read().then(function (chunk) {
-          if (chunk.done) {
-            finishResults();
-            return;
-          }
-
-          buffer += decoder.decode(chunk.value, { stream: true });
-          var lines = buffer.split('\n');
-          buffer = lines.pop();
-
-          lines.forEach(function (line) {
-            if (!line.startsWith('data: ')) return;
-            var raw = line.slice(6).trim();
-            if (!raw) return;
-            var parsed;
-            try { parsed = JSON.parse(raw); } catch (_) { return; }
-
-            if (parsed.error) {
-              updateResult(resultEl, '⚠️ ' + parsed.error);
-              finishResults();
-              return;
-            }
-            if (parsed.content) {
-              fullText += parsed.content;
-              updateResult(resultEl, fullText);
-              resultsEl.scrollTop = resultsEl.scrollHeight;
-            }
-            if (parsed.done) {
-              finishResults();
-            }
-          });
-
-          return pump();
-        });
+      if (!payload.ok || payload.data.error) {
+        updateResult(resultEl, '⚠️ ' + (payload.data.error || 'Ошибка сервера'));
+      } else {
+        updateResult(resultEl, payload.data.result || '');
       }
-
-      return pump();
+      resultsEl.scrollTop = resultsEl.scrollHeight;
+      finishResults();
     })
     .catch(function (err) {
       if (typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
