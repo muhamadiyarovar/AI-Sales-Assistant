@@ -144,6 +144,66 @@
     </section>
 
     <!-- ================================================================
+         SCREEN 4 — Подобрать продукт (чат)
+    ================================================================ -->
+    <section id="screen-match" class="screen screen--chat">
+      <div class="chat-layout">
+
+        <!-- Header -->
+        <header class="chat-header">
+          <button class="chat-back-btn" onclick="exitChat()" aria-label="Назад к выбору режима">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12 15l-5-5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="chat-header-info">
+            <span class="chat-header-title">Подобрать продукт</span>
+            <span class="chat-header-sub">ИИ-поиск по базе программ</span>
+          </div>
+          <button class="chat-clear-btn" onclick="clearChat()" title="Новый диалог" aria-label="Начать новый диалог">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M3 9a6 6 0 1 0 1.5-3.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M3 5v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="История диалога">
+          <!-- Greeting injected by JS on first open -->
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <textarea
+              id="chat-input"
+              class="chat-textarea"
+              placeholder="Опишите клиента или задачу…"
+              rows="1"
+              maxlength="2000"
+              aria-label="Введите сообщение"
+              onkeydown="handleChatKey(event)"
+              oninput="autoResizeTextarea(this)"
+            ></textarea>
+            <button
+              id="chat-send-btn"
+              class="chat-send-btn"
+              onclick="sendMessage()"
+              aria-label="Отправить"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 10l14-7-5 14-3-5-6-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <p class="chat-hint">Введите описание клиента, аудитории или ключевые слова — ИИ подберёт программы из базы знаний.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
          TOAST — «Скоро будет доступно»
     ================================================================ -->
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
