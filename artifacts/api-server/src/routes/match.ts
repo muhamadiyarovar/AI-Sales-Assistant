@@ -21,7 +21,7 @@ const KNOWLEDGE_BASE = `
 Целевая аудитория: Студенты медицинских и биомедицинских направлений
 Стоимость: не указана
 Статус: Разработана
-ONE-PAGER:
+ONE-PAGER: https://drive.google.com/file/d/18L-hRdCczQSC_P_Hm0ChbNMVMSTerJA4/view?usp=sharing
 ---
 Наименование: ИИ в медицине
 Ключевые слова: ИИ, Медицина
