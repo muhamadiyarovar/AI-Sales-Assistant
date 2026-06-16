@@ -205,18 +205,37 @@ function exitChat() {
 // Markdown formatter (bold, italic, br)
 // ────────────────────────────────────────────────────────────────
 
-function formatMarkdown(text) {
-  if (!text) return '';
-  var s = text
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatLine(line) {
+  var s = line
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*(?!\*)(.+?)\*(?!\*)/g, '<em>$1</em>');
-  s = s.replace(/\n/g, '<br>');
   s = s.replace(/(https?:\/\/[^\s<"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   return s;
+}
+
+function formatMarkdown(text) {
+  if (!text) return '';
+  var lines = text.split('\n');
+  var out = lines.map(function(line) {
+    // ONE-PAGER with Google Drive URL → show thumbnail image
+    var gdMatch = line.match(/^ONE-PAGER:\s*(https:\/\/drive\.google\.com\/file\/d\/([^\/\s]+))/);
+    if (gdMatch) {
+      var url = gdMatch[1];
+      var fileId = gdMatch[2];
+      var thumb = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w900';
+      return 'ONE-PAGER: <a href="' + escHtml(url) + '/view?usp=sharing" target="_blank" rel="noopener noreferrer">'
+        + '<img src="' + thumb + '" alt="One-pager" class="onepager-img" /></a>';
+    }
+    return formatLine(line);
+  });
+  return out.join('<br>');
 }
 
 // ────────────────────────────────────────────────────────────────

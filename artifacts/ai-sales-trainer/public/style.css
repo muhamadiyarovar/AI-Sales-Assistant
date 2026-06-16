@@ -645,6 +645,20 @@ body {
   word-break: break-all;
 }
 .result-block a:hover { color: var(--accent-dark); }
+.onepager-img {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #e0e4ea;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.onepager-img:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
 
 /* Typing indicator inside results */
 .chat-typing {
