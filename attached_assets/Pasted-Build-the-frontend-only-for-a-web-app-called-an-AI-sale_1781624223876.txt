@@ -1,0 +1,21 @@
+Build the frontend only for a web app called "ИИ-тренажёр продаж" (an AI sales-training assistant for an edtech company). No backend, no Node, no Express — just static frontend files. This first task builds the start flow only: three screens. The chat and product database come in later steps.
+Tech & structure
+Plain HTML/CSS/vanilla JS. No React, no frameworks, no build step.
+Three files: index.html, style.css, app.js.
+It must run by just opening index.html (in Replit: an HTML/CSS/JS static repl).
+Screen switching is done by showing/hiding sections with JS — no page reloads, no separate URLs.
+All visible UI text must be in Russian. You choose the color palette and visual style — clean, modern, professional, slightly "edtech" (calm, trustworthy), fully responsive and good on mobile.
+Screen 1 — Welcome (Приветствие)
+App title "ИИ-тренажёр продаж" and a one-line subtitle: it helps sales staff master the product line before talking to clients.
+A single primary button "Начать" → goes to Screen 2.
+Screen 2 — Instructions (Инструкция)
+A short, friendly explanation of how the trainer works, as a few clear steps. In Russian, cover: the user picks one of two modes; "Подобрать продукт" helps find the right program for a client using filters; "Потренироваться" lets them practice answering client questions and objections and get feedback; all answers are based on the company's knowledge base.
+A primary button "Понятно, продолжить" → Screen 3, and a secondary "Назад" → Screen 1.
+Screen 3 — Mode choice (Выбор режима)
+Heading "Что хотите сделать?".
+Two large, equally prominent selectable cards:
+"Подобрать продукт" — caption: подбор программы под задачу или заказчика.
+"Потренироваться отвечать по продукту" — caption: отработка вопросов и возражений с обратной связью.
+For now, clicking a card calls a placeholder function (selectMode('match') / selectMode('practice')) that shows a temporary "Скоро будет доступно" message. Leave a clearly-marked // TODO where the real mode flow will be wired in later.
+A secondary "Назад" → Screen 2.
+Keep the JS clean and commented so the screens are easy to extend later. Show me the planned file structure first, then implement all three files.

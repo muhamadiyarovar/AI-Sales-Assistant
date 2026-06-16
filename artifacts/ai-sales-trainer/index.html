@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>ИИ-тренажёр продаж</title>
+    <meta name="description" content="ИИ-тренажёр продаж — помогает сотрудникам освоить продуктовую линейку." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+
+    <!-- ================================================================
+         SCREEN 1 — Приветствие
+    ================================================================ -->
+    <section id="screen-welcome" class="screen active">
+      <div class="screen-inner welcome-inner">
+        <div class="logo-mark" aria-hidden="true">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="52" height="52" rx="16" fill="#3B7CFF"/>
+            <path d="M15 33V20a3 3 0 013-3h9l8 8v8a3 3 0 01-3 3H18a3 3 0 01-3-3z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M27 17v8h8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="21" cy="27" r="1.5" fill="#fff"/>
+            <circle cx="26" cy="27" r="1.5" fill="#fff"/>
+            <circle cx="31" cy="27" r="1.5" fill="#fff"/>
+          </svg>
+        </div>
+        <h1 class="app-title">ИИ&#8209;тренажёр продаж</h1>
+        <p class="app-subtitle">Помогает сотрудникам досконально изучить продуктовую линейку до общения с клиентами</p>
+        <button class="btn btn-primary" onclick="goToScreen('instructions')">Начать</button>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SCREEN 2 — Инструкция
+    ================================================================ -->
+    <section id="screen-instructions" class="screen">
+      <div class="screen-inner">
+        <div class="screen-header">
+          <h2 class="screen-title">Как работает тренажёр</h2>
+          <p class="screen-subtitle">Два режима — для разных задач</p>
+        </div>
+
+        <ol class="steps-list" role="list">
+          <li class="step-item">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div class="step-body">
+              <strong>Выберите режим</strong>
+              <p>Вы сами решаете, что нужно прямо сейчас — подобрать продукт или потренироваться в диалоге.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div class="step-body">
+              <strong>«Подобрать продукт»</strong>
+              <p>ИИ задаёт уточняющие вопросы и по фильтрам находит наиболее подходящую программу для задачи клиента.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div class="step-body">
+              <strong>«Потренироваться»</strong>
+              <p>ИИ играет роль клиента: задаёт вопросы, возражает. В конце — разбор ответов и развёрнутая обратная связь.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <span class="step-number" aria-hidden="true">4</span>
+            <div class="step-body">
+              <strong>Всё на основе базы знаний</strong>
+              <p>Все ответы и рекомендации строятся исключительно на материалах компании.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goToScreen('welcome')">Назад</button>
+          <button class="btn btn-primary" onclick="goToScreen('mode-choice')">Понятно, продолжить</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SCREEN 3 — Выбор режима
+    ================================================================ -->
+    <section id="screen-mode-choice" class="screen">
+      <div class="screen-inner">
+        <div class="screen-header">
+          <h2 class="screen-title">Что хотите сделать?</h2>
+          <p class="screen-subtitle">Выберите один из двух режимов</p>
+        </div>
+
+        <div class="mode-cards">
+          <!-- Card: Match product -->
+          <button
+            class="mode-card"
+            onclick="selectMode('match')"
+            aria-label="Подобрать продукт — подбор программы под задачу или заказчика"
+          >
+            <div class="mode-card-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="4" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M6 10h8M6 14h8M6 18h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="22" cy="9" r="4" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M25 12l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="mode-card-body">
+              <span class="mode-card-title">Подобрать продукт</span>
+              <span class="mode-card-caption">Подбор программы под задачу или заказчика</span>
+            </div>
+            <span class="mode-card-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 10h7m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+
+          <!-- Card: Practice -->
+          <button
+            class="mode-card"
+            onclick="selectMode('practice')"
+            aria-label="Потренироваться отвечать по продукту — отработка вопросов и возражений с обратной связью"
+          >
+            <div class="mode-card-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 20V9a3 3 0 013-3h14a3 3 0 013 3v7a3 3 0 01-3 3H10l-6 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="10" cy="12.5" r="1.3" fill="currentColor"/>
+                <circle cx="14" cy="12.5" r="1.3" fill="currentColor"/>
+                <circle cx="18" cy="12.5" r="1.3" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="mode-card-body">
+              <span class="mode-card-title">Потренироваться отвечать по продукту</span>
+              <span class="mode-card-caption">Отработка вопросов и возражений с обратной связью</span>
+            </div>
+            <span class="mode-card-arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 10h7m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div class="btn-row btn-row--single">
+          <button class="btn btn-secondary" onclick="goToScreen('instructions')">Назад</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         TOAST — «Скоро будет доступно»
+    ================================================================ -->
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
