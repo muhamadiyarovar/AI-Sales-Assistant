@@ -259,9 +259,11 @@ router.post("/match", async (req, res) => {
   }
 
   res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering in production
+  res.flushHeaders(); // send headers immediately so the stream starts
 
   try {
     const stream = await openai.chat.completions.create({
