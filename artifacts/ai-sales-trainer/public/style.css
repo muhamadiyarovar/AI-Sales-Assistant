@@ -638,6 +638,13 @@ body {
 
 .result-block strong { font-weight: 700; }
 .result-block em     { font-style: italic; }
+.result-block a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.result-block a:hover { color: var(--accent-dark); }
 
 /* Typing indicator inside results */
 .chat-typing {

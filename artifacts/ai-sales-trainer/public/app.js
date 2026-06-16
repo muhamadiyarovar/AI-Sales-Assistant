@@ -215,6 +215,7 @@ function formatMarkdown(text) {
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*(?!\*)(.+?)\*(?!\*)/g, '<em>$1</em>');
   s = s.replace(/\n/g, '<br>');
+  s = s.replace(/(https?:\/\/[^\s<"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   return s;
 }
 
