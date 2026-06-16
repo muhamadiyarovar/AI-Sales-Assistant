@@ -5,30 +5,24 @@
  *   'welcome'      → #screen-welcome      (Screen 1)
  *   'instructions' → #screen-instructions  (Screen 2)
  *   'mode-choice'  → #screen-mode-choice   (Screen 3)
- *   'match'        → #screen-match         (Screen 4 — «Подобрать продукт» chat)
- *
- * Navigation: toggling `.active` class — no page reloads.
+ *   'match'        → #screen-match         (Screen 4 — фильтры + результаты)
  */
+
+var MATCH_API_URL = '/api/match';
+var chatStreaming = false;
 
 // ────────────────────────────────────────────────────────────────
 // Navigation
 // ────────────────────────────────────────────────────────────────
 
-/**
- * Show the requested screen and hide all others.
- * @param {string} screenId
- */
 function goToScreen(screenId) {
   document.querySelectorAll('.screen').forEach(function (s) {
     s.classList.remove('active');
   });
-
   var target = document.getElementById('screen-' + screenId);
   if (target) {
     target.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    console.warn('[App] Unknown screen ID:', screenId);
   }
 }
 
@@ -36,94 +30,118 @@ function goToScreen(screenId) {
 // Mode selection (Screen 3)
 // ────────────────────────────────────────────────────────────────
 
-/**
- * Called when the user taps a mode card on Screen 3.
- * @param {'match' | 'practice'} mode
- */
 function selectMode(mode) {
   if (mode === 'match') {
-    startMatchMode();
+    goToScreen('match');
     return;
   }
-
-  // TODO: Wire up 'practice' mode when it's ready.
   showToast('Скоро будет доступно');
 }
 
 // ────────────────────────────────────────────────────────────────
-// SCREEN 4 — «Подобрать продукт» chat
+// SCREEN 4 — Фильтры
 // ────────────────────────────────────────────────────────────────
 
-/** API endpoint — goes through the shared proxy on port 80 */
-var MATCH_API_URL = '/api/match';
-
-/** Conversation history sent to the server on each turn */
-var chatHistory = [];
-
-/** True while an AI response is being streamed */
-var chatStreaming = false;
-
 /**
- * Open the match-chat screen. On first open, send a hidden trigger to the AI
- * so it generates the full checkbox-menu greeting.
+ * Collect checked values from the filter panel.
+ * Returns an object { audience[], hours[], keywords[], price[], format[], doctype[] }
  */
-function startMatchMode() {
-  goToScreen('match');
-
-  if (chatHistory.length === 0) {
-    // Send a silent trigger so the AI produces the checkbox menu on its own.
-    // We don't add this trigger to chatHistory so it won't appear as a user bubble.
-    triggerInitialGreeting();
+function collectFilters() {
+  function checked(name) {
+    return Array.from(
+      document.querySelectorAll('#filter-panel input[name="' + name + '"]:checked')
+    ).map(function (cb) { return cb.value; });
   }
 
-  // Focus input after transition
-  setTimeout(function () {
-    var input = document.getElementById('chat-input');
-    if (input) input.focus();
-  }, 200);
+  return {
+    'Целевая аудитория': checked('audience'),
+    'Трудоёмкость':      checked('hours'),
+    'Ключевые слова':    checked('keywords'),
+    'Стоимость':         checked('price'),
+    'Формат программы':  checked('format'),
+    'Тип документа':     checked('doctype'),
+  };
 }
 
 /**
- * Fires one invisible "start" message to get the AI's opening checkbox menu.
- * The trigger is not stored in chatHistory — only the AI reply is.
+ * Format selected filters into a readable message for the AI.
+ * @returns {string|null} null when nothing is checked
  */
-function triggerInitialGreeting() {
-  var typingEl = addTypingIndicator();
-  chatStreaming = true;
-  setSendDisabled(true);
+function buildFilterMessage(filters) {
+  var lines = [];
+  Object.keys(filters).forEach(function (field) {
+    var vals = filters[field];
+    if (vals.length > 0) {
+      lines.push('• ' + field + ': ' + vals.join(', '));
+    }
+  });
+  if (lines.length === 0) return null;
+  return 'Применить фильтры:\n' + lines.join('\n');
+}
 
-  var triggerMessages = [{ role: 'user', content: 'Начать подбор программы' }];
-  var assistantText = '';
-  var bubbleEl = null;
+/**
+ * Called when the user clicks «Найти программы».
+ */
+function applyFilters() {
+  if (chatStreaming) return;
+
+  var filters = collectFilters();
+  var message = buildFilterMessage(filters);
+
+  if (!message) {
+    showToast('Выберите хотя бы один фильтр');
+    return;
+  }
+
+  var resultsEl = document.getElementById('chat-messages');
+  if (!resultsEl) return;
+
+  // Clear previous results
+  resultsEl.innerHTML = '';
+
+  // Disable button while streaming
+  setApplyDisabled(true);
+  chatStreaming = true;
+
+  // Show typing indicator
+  var typingEl = document.createElement('div');
+  typingEl.className = 'chat-typing';
+  typingEl.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+  resultsEl.appendChild(typingEl);
+
+  // Scroll to results
+  resultsEl.scrollTop = 0;
+
+  // Create result block that will be filled as the stream arrives
+  var resultEl = null;
+  var fullText = '';
 
   fetch(MATCH_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: triggerMessages }),
+    body: JSON.stringify({ messages: [{ role: 'user', content: message }] }),
   })
     .then(function (res) {
       if (!res.ok) throw new Error('Сервер вернул ошибку ' + res.status);
-      removeTypingIndicator(typingEl);
-      bubbleEl = addAssistantMessage('');
+
+      // Remove typing indicator, create result block
+      if (typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+      resultEl = document.createElement('div');
+      resultEl.className = 'result-block';
+      resultsEl.appendChild(resultEl);
 
       var reader = res.body.getReader();
       var decoder = new TextDecoder();
       var buffer = '';
 
       function pump() {
-        return reader.read().then(function (result) {
-          if (result.done) {
-            // Save only the AI reply to history — no user bubble shown
-            if (assistantText) {
-              chatHistory.push({ role: 'assistant', content: assistantText });
-            }
-            chatStreaming = false;
-            setSendDisabled(false);
-            scrollToBottom();
+        return reader.read().then(function (chunk) {
+          if (chunk.done) {
+            finishResults();
             return;
           }
 
-          buffer += decoder.decode(result.value, { stream: true });
+          buffer += decoder.decode(chunk.value, { stream: true });
           var lines = buffer.split('\n');
           buffer = lines.pop();
 
@@ -135,113 +153,17 @@ function triggerInitialGreeting() {
             try { parsed = JSON.parse(raw); } catch (_) { return; }
 
             if (parsed.error) {
-              updateBubble(bubbleEl, '⚠️ ' + parsed.error);
-              chatStreaming = false;
-              setSendDisabled(false);
+              updateResult(resultEl, '⚠️ ' + parsed.error);
+              finishResults();
               return;
             }
             if (parsed.content) {
-              assistantText += parsed.content;
-              updateBubble(bubbleEl, assistantText);
-              scrollToBottom();
+              fullText += parsed.content;
+              updateResult(resultEl, fullText);
+              resultsEl.scrollTop = resultsEl.scrollHeight;
             }
-          });
-
-          return pump();
-        });
-      }
-
-      return pump();
-    })
-    .catch(function (err) {
-      removeTypingIndicator(typingEl);
-      if (!bubbleEl) bubbleEl = addAssistantMessage('');
-      updateBubble(bubbleEl, '⚠️ Не удалось загрузить меню: ' + err.message);
-      chatStreaming = false;
-      setSendDisabled(false);
-    });
-}
-
-/**
- * Send the user's message and stream the AI response.
- */
-function sendMessage() {
-  if (chatStreaming) return;
-
-  var input = document.getElementById('chat-input');
-  if (!input) return;
-
-  var text = input.value.trim();
-  if (!text) return;
-
-  // Show user bubble
-  addUserMessage(text);
-  input.value = '';
-  autoResizeTextarea(input);
-
-  // Add to history
-  chatHistory.push({ role: 'user', content: text });
-
-  // Show typing indicator
-  var typingEl = addTypingIndicator();
-
-  // Disable send while streaming
-  chatStreaming = true;
-  setSendDisabled(true);
-
-  // Stream from server
-  var assistantText = '';
-  var bubbleEl = null;
-
-  fetch(MATCH_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: chatHistory }),
-  })
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error('Сервер вернул ошибку ' + res.status);
-      }
-      removeTypingIndicator(typingEl);
-      bubbleEl = addAssistantMessage('');
-
-      var reader = res.body.getReader();
-      var decoder = new TextDecoder();
-      var buffer = '';
-
-      function pump() {
-        return reader.read().then(function (result) {
-          if (result.done) {
-            finishStreaming(assistantText);
-            return;
-          }
-
-          buffer += decoder.decode(result.value, { stream: true });
-          var lines = buffer.split('\n');
-          buffer = lines.pop(); // keep incomplete last line
-
-          lines.forEach(function (line) {
-            if (!line.startsWith('data: ')) return;
-            var raw = line.slice(6).trim();
-            if (!raw) return;
-
-            var parsed;
-            try { parsed = JSON.parse(raw); } catch (_) { return; }
-
-            if (parsed.error) {
-              updateBubble(bubbleEl, '⚠️ ' + parsed.error);
-              finishStreaming(null);
-              return;
-            }
-
-            if (parsed.content) {
-              assistantText += parsed.content;
-              updateBubble(bubbleEl, assistantText);
-              scrollToBottom();
-            }
-
             if (parsed.done) {
-              finishStreaming(assistantText);
+              finishResults();
             }
           });
 
@@ -252,175 +174,99 @@ function sendMessage() {
       return pump();
     })
     .catch(function (err) {
-      removeTypingIndicator(typingEl);
-      if (!bubbleEl) bubbleEl = addAssistantMessage('');
-      updateBubble(bubbleEl, '⚠️ Не удалось получить ответ: ' + err.message);
-      finishStreaming(null);
+      if (typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+      if (!resultEl) {
+        resultEl = document.createElement('div');
+        resultEl.className = 'result-block';
+        resultsEl.appendChild(resultEl);
+      }
+      updateResult(resultEl, '⚠️ Не удалось получить результат: ' + err.message);
+      finishResults();
     });
 }
 
-/**
- * Called when the stream ends. Saves the assistant message to history.
- * @param {string|null} text
- */
-function finishStreaming(text) {
+function finishResults() {
   chatStreaming = false;
-  setSendDisabled(false);
-  if (text) {
-    chatHistory.push({ role: 'assistant', content: text });
+  setApplyDisabled(false);
+}
+
+function updateResult(el, text) {
+  if (el) el.innerHTML = formatMarkdown(text);
+}
+
+function setApplyDisabled(disabled) {
+  var btn = document.getElementById('apply-btn');
+  if (btn) {
+    btn.disabled = disabled;
+    btn.textContent = disabled ? 'Поиск…' : 'Найти программы';
   }
-  scrollToBottom();
-}
-
-// ── DOM helpers ──────────────────────────────────────────────────
-
-function addUserMessage(text) {
-  var msg = document.createElement('div');
-  msg.className = 'chat-msg chat-msg--user';
-  var bubble = document.createElement('div');
-  bubble.className = 'chat-bubble';
-  bubble.textContent = text;
-  msg.appendChild(bubble);
-  getMessagesContainer().appendChild(msg);
-  scrollToBottom();
-}
-
-/**
- * Add an assistant bubble and return the bubble element so it can be updated.
- * @param {string} text  Initial text (may be empty for streaming)
- * @returns {HTMLElement}
- */
-function addAssistantMessage(text) {
-  var msg = document.createElement('div');
-  msg.className = 'chat-msg chat-msg--assistant';
-  var bubble = document.createElement('div');
-  bubble.className = 'chat-bubble';
-  bubble.innerHTML = formatMarkdown(text);
-  msg.appendChild(bubble);
-  getMessagesContainer().appendChild(msg);
-  scrollToBottom();
-  return bubble;
-}
-
-/**
- * Replace bubble innerHTML with freshly formatted text.
- * @param {HTMLElement} bubble
- * @param {string} text
- */
-function updateBubble(bubble, text) {
-  if (bubble) bubble.innerHTML = formatMarkdown(text);
-}
-
-function addTypingIndicator() {
-  var el = document.createElement('div');
-  el.className = 'chat-typing';
-  el.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
-  getMessagesContainer().appendChild(el);
-  scrollToBottom();
-  return el;
-}
-
-function removeTypingIndicator(el) {
-  if (el && el.parentNode) el.parentNode.removeChild(el);
-}
-
-function getMessagesContainer() {
-  return document.getElementById('chat-messages');
-}
-
-function scrollToBottom() {
-  var container = getMessagesContainer();
-  if (container) container.scrollTop = container.scrollHeight;
-}
-
-function setSendDisabled(disabled) {
-  var btn = document.getElementById('chat-send-btn');
-  if (btn) btn.disabled = disabled;
-}
-
-// ── Minimal markdown formatter ──────────────────────────────────
-
-/**
- * Convert a small subset of Markdown to safe HTML:
- *   **bold**, *italic*, bullet lists (- or •), numbered lists, blank-line paragraphs.
- * No external library required.
- * @param {string} text
- * @returns {string}
- */
-function formatMarkdown(text) {
-  if (!text) return '';
-
-  // Escape HTML entities first
-  var escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-  // Bold: **text**
-  escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-  // Italic: *text* (not inside bold)
-  escaped = escaped.replace(/\*(?!\*)(.+?)\*(?!\*)/g, '<em>$1</em>');
-
-  // Newlines → <br>
-  escaped = escaped.replace(/\n/g, '<br>');
-
-  return escaped;
 }
 
 // ────────────────────────────────────────────────────────────────
-// Chat controls
+// Reset helpers
 // ────────────────────────────────────────────────────────────────
 
-/** Return to mode-choice screen from the chat */
+/** Uncheck all filter checkboxes */
+function resetFilters() {
+  document.querySelectorAll('#filter-panel input[type="checkbox"]').forEach(function (cb) {
+    cb.checked = false;
+  });
+  showToast('Фильтры сброшены');
+}
+
+/** Uncheck filters + clear results */
+function resetAll() {
+  if (chatStreaming) return;
+  resetFilters();
+  var resultsEl = document.getElementById('chat-messages');
+  if (resultsEl) {
+    resultsEl.innerHTML =
+      '<div class="results-placeholder" id="results-placeholder">' +
+      '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">' +
+      '<rect x="4" y="6" width="22" height="28" rx="4" stroke="#CBD5E1" stroke-width="2"/>' +
+      '<path d="M9 14h12M9 19h12M9 24h7" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="31" cy="12" r="6" stroke="#CBD5E1" stroke-width="2"/>' +
+      '<path d="M36 17l4 4" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>' +
+      '</svg>' +
+      '<p>Выберите фильтры выше и нажмите<br><strong>«Найти программы»</strong></p>' +
+      '</div>';
+  }
+}
+
+/** Go back to mode-choice */
 function exitChat() {
   goToScreen('mode-choice');
 }
 
-/** Wipe conversation and start fresh */
-function clearChat() {
-  if (chatStreaming) return;
-  chatHistory = [];
-  var container = getMessagesContainer();
-  if (container) container.innerHTML = '';
-  triggerInitialGreeting();
-}
+// ────────────────────────────────────────────────────────────────
+// Markdown formatter (bold, italic, br)
+// ────────────────────────────────────────────────────────────────
 
-/** Send on Enter (not Shift+Enter) */
-function handleChatKey(event) {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
-  }
-}
+function formatMarkdown(text) {
+  if (!text) return '';
+  var s = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
-/** Grow textarea as user types */
-function autoResizeTextarea(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/\*(?!\*)(.+?)\*(?!\*)/g, '<em>$1</em>');
+  s = s.replace(/\n/g, '<br>');
+  return s;
 }
 
 // ────────────────────────────────────────────────────────────────
-// Toast utility
+// Toast
 // ────────────────────────────────────────────────────────────────
 
-/** @type {ReturnType<typeof setTimeout> | null} */
 var toastTimer = null;
 
-/**
- * Show a brief notification at the bottom of the screen.
- * @param {string} message
- * @param {number} [duration=2500]
- */
 function showToast(message, duration) {
   var el = document.getElementById('toast');
   if (!el) return;
-
   if (toastTimer !== null) { clearTimeout(toastTimer); toastTimer = null; }
-
   el.textContent = message;
   el.classList.add('visible');
-
   toastTimer = setTimeout(function () {
     el.classList.remove('visible');
     toastTimer = null;
@@ -430,6 +276,7 @@ function showToast(message, duration) {
 // ────────────────────────────────────────────────────────────────
 // Init
 // ────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', function () {
   goToScreen('welcome');
 });

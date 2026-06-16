@@ -144,7 +144,7 @@
     </section>
 
     <!-- ================================================================
-         SCREEN 4 — Подобрать продукт (чат)
+         SCREEN 4 — Подобрать продукт (фильтры + результаты)
     ================================================================ -->
     <section id="screen-match" class="screen screen--chat">
       <div class="chat-layout">
@@ -158,9 +158,9 @@
           </button>
           <div class="chat-header-info">
             <span class="chat-header-title">Подобрать продукт</span>
-            <span class="chat-header-sub">ИИ-поиск по базе программ</span>
+            <span class="chat-header-sub">Выберите фильтры и нажмите «Найти»</span>
           </div>
-          <button class="chat-clear-btn" onclick="clearChat()" title="Новый диалог" aria-label="Начать новый диалог">
+          <button class="chat-clear-btn" onclick="resetAll()" title="Сбросить фильтры и результаты" aria-label="Сбросить">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3 9a6 6 0 1 0 1.5-3.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
               <path d="M3 5v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -168,36 +168,95 @@
           </button>
         </header>
 
-        <!-- Messages -->
-        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="История диалога">
-          <!-- Greeting injected by JS on first open -->
-        </div>
+        <!-- ── Filter Panel ─────────────────────────────────────── -->
+        <div class="filter-panel" id="filter-panel">
 
-        <!-- Input -->
-        <div class="chat-input-area">
-          <div class="chat-input-row">
-            <textarea
-              id="chat-input"
-              class="chat-textarea"
-              placeholder="Опишите клиента или задачу…"
-              rows="1"
-              maxlength="2000"
-              aria-label="Введите сообщение"
-              onkeydown="handleChatKey(event)"
-              oninput="autoResizeTextarea(this)"
-            ></textarea>
-            <button
-              id="chat-send-btn"
-              class="chat-send-btn"
-              onclick="sendMessage()"
-              aria-label="Отправить"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 10l14-7-5 14-3-5-6-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              </svg>
-            </button>
+          <!-- Целевая аудитория -->
+          <div class="fg">
+            <div class="fg-label">Целевая аудитория</div>
+            <div class="fg-opts">
+              <label class="fopt"><input type="checkbox" name="audience" value="Студенты медицинских и биомедицинских направлений"> Студенты медицинских направлений</label>
+              <label class="fopt"><input type="checkbox" name="audience" value="Курсанты военных вузов"> Курсанты военных вузов</label>
+              <label class="fopt"><input type="checkbox" name="audience" value="Студенты ИТ, ИИ и технических направлений"> Студенты ИТ / ИИ</label>
+              <label class="fopt"><input type="checkbox" name="audience" value="Руководители и специалисты"> Руководители / бизнес</label>
+            </div>
           </div>
-          <p class="chat-hint">Введите описание клиента, аудитории или ключевые слова — ИИ подберёт программы из базы знаний.</p>
+
+          <!-- Трудоёмкость -->
+          <div class="fg">
+            <div class="fg-label">Трудоёмкость</div>
+            <div class="fg-opts">
+              <label class="fopt"><input type="checkbox" name="hours" value="до 72 ч"> до 72 ч</label>
+              <label class="fopt"><input type="checkbox" name="hours" value="73–216 ч"> 73–216 ч</label>
+              <label class="fopt"><input type="checkbox" name="hours" value="более 216 ч"> 216+ ч</label>
+            </div>
+          </div>
+
+          <!-- Ключевые слова -->
+          <div class="fg">
+            <div class="fg-label">Ключевые слова</div>
+            <div class="fg-opts fg-opts--wrap">
+              <label class="fopt"><input type="checkbox" name="keywords" value="ИИ"> ИИ</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="машинное обучение"> ML</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="медицина"> Медицина</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="кибербезопасность"> Кибербезопасность</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="компьютерное зрение"> Компьютерное зрение</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="LLM"> LLM</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="анализ данных"> Анализ данных</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="промтинг"> Промтинг</label>
+              <label class="fopt"><input type="checkbox" name="keywords" value="робототехника"> Робототехника</label>
+            </div>
+          </div>
+
+          <!-- Стоимость -->
+          <div class="fg">
+            <div class="fg-label">Стоимость</div>
+            <div class="fg-opts">
+              <label class="fopt"><input type="checkbox" name="price" value="до 100 000 ₽"> до 100 000 ₽</label>
+              <label class="fopt"><input type="checkbox" name="price" value="100 000 ₽ и выше"> 100 000+ ₽</label>
+              <label class="fopt"><input type="checkbox" name="price" value="Стоимость не указана"> Не указана</label>
+            </div>
+          </div>
+
+          <!-- Формат -->
+          <div class="fg">
+            <div class="fg-label">Формат программы</div>
+            <div class="fg-opts">
+              <label class="fopt"><input type="checkbox" name="format" value="Гибридная"> Гибридная</label>
+              <label class="fopt"><input type="checkbox" name="format" value="Очный с цифровым компонентом"> Очный с цифровым</label>
+              <label class="fopt"><input type="checkbox" name="format" value="Очно в кампусе"> Очно в кампусе</label>
+            </div>
+          </div>
+
+          <!-- Тип документа -->
+          <div class="fg">
+            <div class="fg-label">Документ по итогам</div>
+            <div class="fg-opts">
+              <label class="fopt"><input type="checkbox" name="doctype" value="Удостоверение о повышении квалификации"> Удостоверение ПК</label>
+              <label class="fopt"><input type="checkbox" name="doctype" value="Диплом профессиональной переподготовки"> Диплом ПП</label>
+              <label class="fopt"><input type="checkbox" name="doctype" value="Модуль программы"> Модуль (без документа)</label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="filter-actions">
+            <button class="btn btn-secondary btn--sm" onclick="resetFilters()">Сбросить фильтры</button>
+            <button class="btn btn-primary btn--sm" id="apply-btn" onclick="applyFilters()">Найти программы</button>
+          </div>
+
+        </div><!-- /filter-panel -->
+
+        <!-- ── Results ──────────────────────────────────────────── -->
+        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Результаты подбора">
+          <div class="results-placeholder" id="results-placeholder">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <rect x="4" y="6" width="22" height="28" rx="4" stroke="#CBD5E1" stroke-width="2"/>
+              <path d="M9 14h12M9 19h12M9 24h7" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="31" cy="12" r="6" stroke="#CBD5E1" stroke-width="2"/>
+              <path d="M36 17l4 4" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p>Выберите фильтры выше и нажмите<br><strong>«Найти программы»</strong></p>
+          </div>
         </div>
 
       </div>
