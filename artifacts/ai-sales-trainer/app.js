@@ -64,20 +64,16 @@ var chatHistory = [];
 var chatStreaming = false;
 
 /**
- * Open the match-chat screen and show a greeting if the chat is empty.
+ * Open the match-chat screen. On first open, send a hidden trigger to the AI
+ * so it generates the full checkbox-menu greeting.
  */
 function startMatchMode() {
   goToScreen('match');
 
   if (chatHistory.length === 0) {
-    addAssistantMessage(
-      'Привет! Я помогу подобрать подходящую программу.\n\n' +
-      'Опишите клиента или задачу — например:\n' +
-      '• аудитория (студенты, руководители, курсанты…)\n' +
-      '• тема или ключевые слова (ИИ, медицина, ML…)\n' +
-      '• ограничения по часам или бюджету\n\n' +
-      'Можно использовать несколько фильтров сразу.'
-    );
+    // Send a silent trigger so the AI produces the checkbox menu on its own.
+    // We don't add this trigger to chatHistory so it won't appear as a user bubble.
+    triggerInitialGreeting();
   }
 
   // Focus input after transition
@@ -85,6 +81,85 @@ function startMatchMode() {
     var input = document.getElementById('chat-input');
     if (input) input.focus();
   }, 200);
+}
+
+/**
+ * Fires one invisible "start" message to get the AI's opening checkbox menu.
+ * The trigger is not stored in chatHistory — only the AI reply is.
+ */
+function triggerInitialGreeting() {
+  var typingEl = addTypingIndicator();
+  chatStreaming = true;
+  setSendDisabled(true);
+
+  var triggerMessages = [{ role: 'user', content: 'Начать подбор программы' }];
+  var assistantText = '';
+  var bubbleEl = null;
+
+  fetch(MATCH_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: triggerMessages }),
+  })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Сервер вернул ошибку ' + res.status);
+      removeTypingIndicator(typingEl);
+      bubbleEl = addAssistantMessage('');
+
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+
+      function pump() {
+        return reader.read().then(function (result) {
+          if (result.done) {
+            // Save only the AI reply to history — no user bubble shown
+            if (assistantText) {
+              chatHistory.push({ role: 'assistant', content: assistantText });
+            }
+            chatStreaming = false;
+            setSendDisabled(false);
+            scrollToBottom();
+            return;
+          }
+
+          buffer += decoder.decode(result.value, { stream: true });
+          var lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          lines.forEach(function (line) {
+            if (!line.startsWith('data: ')) return;
+            var raw = line.slice(6).trim();
+            if (!raw) return;
+            var parsed;
+            try { parsed = JSON.parse(raw); } catch (_) { return; }
+
+            if (parsed.error) {
+              updateBubble(bubbleEl, '⚠️ ' + parsed.error);
+              chatStreaming = false;
+              setSendDisabled(false);
+              return;
+            }
+            if (parsed.content) {
+              assistantText += parsed.content;
+              updateBubble(bubbleEl, assistantText);
+              scrollToBottom();
+            }
+          });
+
+          return pump();
+        });
+      }
+
+      return pump();
+    })
+    .catch(function (err) {
+      removeTypingIndicator(typingEl);
+      if (!bubbleEl) bubbleEl = addAssistantMessage('');
+      updateBubble(bubbleEl, '⚠️ Не удалось загрузить меню: ' + err.message);
+      chatStreaming = false;
+      setSendDisabled(false);
+    });
 }
 
 /**
@@ -304,13 +379,11 @@ function exitChat() {
 
 /** Wipe conversation and start fresh */
 function clearChat() {
+  if (chatStreaming) return;
   chatHistory = [];
   var container = getMessagesContainer();
   if (container) container.innerHTML = '';
-  // Re-inject greeting
-  addAssistantMessage(
-    'Диалог сброшен. Опишите клиента или задачу, и я подберу подходящие программы.'
-  );
+  triggerInitialGreeting();
 }
 
 /** Send on Enter (not Shift+Enter) */
