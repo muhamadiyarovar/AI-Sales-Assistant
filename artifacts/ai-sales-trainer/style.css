@@ -87,6 +87,14 @@ body {
   justify-content: center;
 }
 
+.logo-img {
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
+  object-fit: contain;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+
 .app-title {
   font-size: 1.875rem;
   font-weight: 700;
